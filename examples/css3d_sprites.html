@@ -38,6 +38,8 @@
 		<script src="js/libs/tween.min.js"></script>
 		<script src="js/controls/TrackballControls.js"></script>
 		<script src="js/renderers/CSS3DRenderer.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js css3d</a> - sprites.</div>
 		<div id="container"></div>
@@ -52,8 +54,8 @@
 			var objects = [];
 			var current = 0;
 
-			init();
-			animate();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -69,9 +71,12 @@
 					for ( var i = 0; i < particlesTotal; i ++ ) {
 
 						var object = new THREE.CSS3DSprite( image.cloneNode() );
-						object.position.x = Math.random() * 4000 - 2000,
-						object.position.y = Math.random() * 4000 - 2000,
-						object.position.z = Math.random() * 4000 - 2000;
+						//object.position.x = Math.random() * 4000 - 2000,
+						//object.position.y = Math.random() * 4000 - 2000,
+						//object.position.z = Math.random() * 4000 - 2000;
+						object.position.x = 2000,
+						object.position.y = 2000,
+						object.position.z = 2000,
 						scene.add( object );
 
 						objects.push( object );
@@ -156,6 +161,17 @@
 
 				controls = new THREE.TrackballControls( camera, renderer.domElement );
 				controls.rotateSpeed = 0.5;
+                                var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                                distributed.sync();
+
+                                watch('positions', {
+                                    get: function () {
+                                        return positions;
+                                    },
+                                    set: function (value) {
+                                        positions = value;
+                                    }
+                                }, 1000);
 
 				//
 
@@ -186,7 +202,8 @@
 							x: positions[ j ],
 							y: positions[ j + 1 ],
 							z: positions[ j + 2 ]
-						}, Math.random() * duration + duration )
+						//}, Math.random() * duration + duration )
+						}, 0.1 * duration + duration )
 						.easing( TWEEN.Easing.Exponential.InOut )
 						.start();
 

@@ -43,6 +43,8 @@
 		<script src="js/math/Lut.js"></script>
 		<script src="js/WebGL.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -63,8 +65,8 @@
 
 			var loader = new THREE.BufferGeometryLoader();
 
-			init();
-			animate();
+			setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -75,7 +77,7 @@
 				scene.background = new THREE.Color( 0xffffff );
 
 				// CAMERA
-				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 100 );
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 100 );
 				camera.position.set( 0, 0, 10 );
 
 				stats = new Stats();
@@ -245,71 +247,103 @@
 
 			}
 
+                        var maps = [ 'rainbow', 'cooltowarm', 'blackbody', 'grayscale' ];
+
+                        var colorNumbers = [ '16', '128', '256', '512' ];
+
+                        var key45 = function () {
+
+                            cleanScene();
+
+                            var index = maps.indexOf( colorMap ) >= maps.length - 1 ? 0 : maps.indexOf( colorMap ) + 1;
+
+                            colorMap = maps[ index ];
+
+                            loadModel( colorMap, numberOfColors, legendLayout );
+
+                        }
+
+                        var key83 = function () {
+
+                            cleanScene();
+
+                            var index = colorNumbers.indexOf( numberOfColors ) >= colorNumbers.length - 1 ? 0 : colorNumbers.indexOf( numberOfColors ) + 1;
+
+                            numberOfColors = colorNumbers[ index ];
+
+                            loadModel( colorMap, numberOfColors, legendLayout );
+
+                        }
+
+                        var key68 = function () {
+
+                            if ( ! legendLayout ) {
+
+                                    cleanScene();
+
+                                    legendLayout = 'vertical';
+
+                                    loadModel( colorMap, numberOfColors, legendLayout );
+
+                            } else {
+
+                                    cleanScene();
+
+                                    legendLayout = lut.setLegendOff();
+
+                                    loadModel( colorMap, numberOfColors, legendLayout );
+
+                            }
+
+                        }
+
+                        var key70 = function () {
+
+                            cleanScene();
+
+                            if ( ! legendLayout ) return false;
+
+                            lut.setLegendOff();
+
+                            if ( legendLayout === 'horizontal' ) {
+
+                                    legendLayout = 'vertical';
+
+                            } else {
+
+                                    legendLayout = 'horizontal';
+
+                            }
+
+                            loadModel( colorMap, numberOfColors, legendLayout );
+
+                        }
+
+                        setDistributed(key45, Distributed.SCHEDULE);
+
+                        setDistributed(key45, Distributed.SCHEDULE);
+
+                        setDistributed(key68, Distributed.SCHEDULE);
+
+                        setDistributed(key70, Distributed.SCHEDULE);
+
 			function onKeyDown( e ) {
-
-				var maps = [ 'rainbow', 'cooltowarm', 'blackbody', 'grayscale' ];
-
-				var colorNumbers = [ '16', '128', '256', '512' ];
 
 				if ( e.keyCode === 65 ) {
 
-					cleanScene();
-
-					var index = maps.indexOf( colorMap ) >= maps.length - 1 ? 0 : maps.indexOf( colorMap ) + 1;
-
-					colorMap = maps[ index ];
-
-					loadModel( colorMap, numberOfColors, legendLayout );
+                                    setDistributed(key45, Distributed.IMMEDIATE);
 
 				} else if ( e.keyCode === 83 ) {
 
-					cleanScene();
-
-					var index = colorNumbers.indexOf( numberOfColors ) >= colorNumbers.length - 1 ? 0 : colorNumbers.indexOf( numberOfColors ) + 1;
-
-					numberOfColors = colorNumbers[ index ];
-
-					loadModel( colorMap, numberOfColors, legendLayout );
+                                    setDistributed(key83, Distributed.IMMEDIATE);
 
 				} else if ( e.keyCode === 68 ) {
 
-					if ( ! legendLayout ) {
-
-						cleanScene();
-
-						legendLayout = 'vertical';
-
-						loadModel( colorMap, numberOfColors, legendLayout );
-
-					} else {
-
-						cleanScene();
-
-						legendLayout = lut.setLegendOff();
-
-						loadModel( colorMap, numberOfColors, legendLayout );
-
-					}
+                                    setDistributed(key68, Distributed.IMMEDIATE);
 
 				} else if ( e.keyCode === 70 ) {
 
-					cleanScene();
-
-					if ( ! legendLayout ) return false;
-
-					lut.setLegendOff();
-
-					if ( legendLayout === 'horizontal' ) {
-
-						legendLayout = 'vertical';
-
-					} else {
-
-						legendLayout = 'horizontal';
-
-					}
-
-					loadModel( colorMap, numberOfColors, legendLayout );
+                                    setDistributed(key70, Distributed.IMMEDIATE);
 
 				}
 

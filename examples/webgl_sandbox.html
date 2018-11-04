@@ -37,6 +37,8 @@
 		<script src="js/shaders/BasicShader.js"></script>
 
 		<script src="js/libs/stats.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -51,8 +53,8 @@
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
 
-			init();
-			animate();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -61,6 +63,8 @@
 
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
 				camera.position.z = 3200;
+                                var distributed = new THREE.Distributed( { camera: camera } );
+                                distributed.sync();
 
 				scene = new THREE.Scene();
 				scene.fog = new THREE.Fog( 0x000000, 1, 20000 );
@@ -187,6 +191,16 @@
 				mouseY = ( event.clientY - windowHalfY ) * 10;
 
 			}
+
+                        watch('mouse', {
+                            get: function () {
+                                return { x: mouseX, y: mouseY };
+                            },
+                            set: function (value) {
+                                mouseX = value.x;
+                                mouseY = value.y;
+                            }
+                        }, 1000);
 
 			//
 

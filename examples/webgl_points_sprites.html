@@ -42,6 +42,8 @@
 		<script src="js/WebGL.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 		<script src="js/libs/dat.gui.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -57,13 +59,15 @@
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
 
-			init();
-			animate();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.z = 1000;
+                                var distributed = new THREE.Distributed( { camera: camera } );
+                                distributed.sync();
 
 				scene = new THREE.Scene();
 				scene.fog = new THREE.FogExp2( 0x000000, 0.0008 );
@@ -138,18 +142,30 @@
 					texture: true
 				};
 
-				gui.add( params, 'texture' ).onChange( function ( value ) {
+                                var changeTexture = function ( value ) {
 
-					for ( var i = 0; i < materials.length; i ++ ) {
+                                        for ( var i = 0; i < materials.length; i ++ ) {
 
-						materials[ i ].map = ( value === true ) ? parameters[ i ][ 1 ] : null;
-						materials[ i ].needsUpdate = true;
+                                                materials[ i ].map = ( value === true ) ? parameters[ i ][ 1 ] : null;
+                                                materials[ i ].needsUpdate = true;
 
-					}
+                                        }
 
-				} );
+                                };
+
+				gui.add( params, 'texture' ).onChange(changeTexture);
 
 				gui.open();
+
+                                watch('texture', {
+                                    get: function () {
+                                        return params.texture;
+                                    },
+                                    set: function (value) {
+                                        params.texture = value;
+                                        changeTexture(value);
+                                    }
+                                }, 1000);
 
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
@@ -160,6 +176,16 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
+
+                        watch('mouse', {
+                            get: function () {
+                                return { x: mouseX, y: mouseY };
+                            },
+                            set: function (value) {
+                                mouseX = value.x;
+                                mouseY = value.y;
+                            }
+                        }, 1000);
 
 			function onWindowResize() {
 

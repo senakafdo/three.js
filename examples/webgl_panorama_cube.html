@@ -36,6 +36,8 @@
 
 		<script src="../build/three.js"></script>
 		<script src="js/controls/OrbitControls.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -43,8 +45,8 @@
 		var renderer;
 		var scene;
 
-		init();
-		animate();
+                setDistributed(init, Distributed.IMMEDIATE);
+                setDistributed(animate, Distributed.TIMEOUT, 500);
 
 		function init() {
 
@@ -65,6 +67,9 @@
 			controls.enablePan = false;
 			controls.enableDamping = true;
 			controls.rotateSpeed = - 0.25;
+
+                        var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                        distributed.sync();
 
 			var textures = getTexturesFromAtlasFile( "textures/cube/sun_temple_stripe.jpg", 6 );
 

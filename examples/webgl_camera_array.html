@@ -15,14 +15,16 @@
 	<body>
 
 		<script src="../build/three.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
 			var camera, scene, renderer;
 			var mesh;
 
-			init();
-			animate();
+			setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 

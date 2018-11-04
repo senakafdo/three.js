@@ -35,6 +35,8 @@
 
 		<script src="js/WebGL.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -59,8 +61,8 @@
 			var length = 150;
 			var rotateY = new THREE.Matrix4().makeRotationY( 0.005 );
 
-			init();
-			animate();
+			setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function generatePointCloudGeometry( color, width, length ) {
 
@@ -224,6 +226,8 @@
 				camera.position.set( 10, 10, 10 );
 				camera.lookAt( scene.position );
 				camera.updateMatrix();
+                                var distributed = new THREE.Distributed( { camera: camera } );
+                                distributed.sync();
 
 				//
 
@@ -285,6 +289,15 @@
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
 			}
+                        watch('mouse', {
+                            get: function () {
+                                return { x: mouse.x, y:mouse.y };
+                            },
+                            set: function (value) {
+                                mouse.x = value.x;
+                                mouse.y = value.y;
+                            }
+                        }, 1000);
 
 			function onDocumentMouseMove( event ) {
 

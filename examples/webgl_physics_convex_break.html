@@ -40,6 +40,8 @@
 	<script src="js/ConvexObjectBreaker.js"></script>
 	<script src="js/QuickHull.js"></script>
 	<script src="js/geometries/ConvexGeometry.js"></script>
+        <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+        <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -96,8 +98,8 @@
 
 		// - Main code -
 
-		init();
-		animate();
+                setDistributed(init, Distributed.IMMEDIATE);
+                setDistributed(animate, Distributed.TIMEOUT, 500);
 
 
 		// - Functions -
@@ -128,6 +130,8 @@
 			controls = new THREE.OrbitControls( camera );
 			controls.target.set( 0, 2, 0 );
 			controls.update();
+                        var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                        distributed.sync();
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.setPixelRatio( window.devicePixelRatio );
@@ -376,32 +380,44 @@
 
 		function initInput() {
 
+                        var mouseEvent = function () {
+                                raycaster.setFromCamera( mouseCoords, camera );
+
+                                // Creates a ball and throws it
+                                var ballMass = 35;
+                                var ballRadius = 0.4;
+
+                                var ball = new THREE.Mesh( new THREE.SphereBufferGeometry( ballRadius, 14, 10 ), ballMaterial );
+                                ball.castShadow = true;
+                                ball.receiveShadow = true;
+                                var ballShape = new Ammo.btSphereShape( ballRadius );
+                                ballShape.setMargin( margin );
+                                pos.copy( raycaster.ray.direction );
+                                pos.add( raycaster.ray.origin );
+                                quat.set( 0, 0, 0, 1 );
+                                var ballBody = createRigidBody( ball, ballShape, ballMass, pos, quat );
+
+                                pos.copy( raycaster.ray.direction );
+                                pos.multiplyScalar( 24 );
+                                ballBody.setLinearVelocity( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
+                        }
+                        watch('mouse', {
+                            get: function () {
+                                return { x: mouseCoords.x, y: mouseCoords.y };
+                            },
+                            set: function (value) {
+                                mouseCoords.x = value.x;
+                                mouseCoords.y = value.y;
+                            }
+                        }, 1000);
+                        setDistributed(mouseEvent, Distributed.SCHEDULE);
 			window.addEventListener( 'mousedown', function( event ) {
 
 				mouseCoords.set(
 					( event.clientX / window.innerWidth ) * 2 - 1,
 					- ( event.clientY / window.innerHeight ) * 2 + 1
 				);
-
-				raycaster.setFromCamera( mouseCoords, camera );
-
-				// Creates a ball and throws it
-				var ballMass = 35;
-				var ballRadius = 0.4;
-
-				var ball = new THREE.Mesh( new THREE.SphereBufferGeometry( ballRadius, 14, 10 ), ballMaterial );
-				ball.castShadow = true;
-				ball.receiveShadow = true;
-				var ballShape = new Ammo.btSphereShape( ballRadius );
-				ballShape.setMargin( margin );
-				pos.copy( raycaster.ray.direction );
-				pos.add( raycaster.ray.origin );
-				quat.set( 0, 0, 0, 1 );
-				var ballBody = createRigidBody( ball, ballShape, ballMass, pos, quat );
-
-				pos.copy( raycaster.ray.direction );
-				pos.multiplyScalar( 24 );
-				ballBody.setLinearVelocity( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
+                                setDistributed(mouseEvent, Distributed.TIMEOUT, 1000);
 
 			}, false );
 

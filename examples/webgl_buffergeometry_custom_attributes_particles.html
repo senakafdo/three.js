@@ -35,6 +35,8 @@
 
 		<script src="js/WebGL.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script type="x-shader/x-vertex" id="vertexshader">
 
@@ -87,13 +89,15 @@
 
 		var particles = 100000;
 
-		init();
-		animate();
+                setDistributed(init, Distributed.IMMEDIATE);
+                setDistributed(animate, Distributed.TIMEOUT, 500);
 
 		function init() {
 
 			camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
 			camera.position.z = 300;
+                        var distributed = new THREE.Distributed( { camera: camera } );
+                        distributed.sync();
 
 			scene = new THREE.Scene();
 

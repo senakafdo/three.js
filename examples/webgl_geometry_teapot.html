@@ -45,6 +45,9 @@
 
 		<script src='js/geometries/TeapotBufferGeometry.js'></script>
 
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
+
 		<script>
 
 			////////////////////////////////////////////////////////////////////////////////
@@ -79,8 +82,8 @@
 			var diffuseColor = new THREE.Color();
 			var specularColor = new THREE.Color();
 
-			init();
-			render();
+			setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(render, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -91,7 +94,7 @@
 				var canvasHeight = window.innerHeight;
 
 				// CAMERA
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 80000 );
+				camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 80000 );
 				camera.position.set( - 600, 550, 1300 );
 
 				// LIGHTS
@@ -113,7 +116,9 @@
 
 				// CONTROLS
 				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-				cameraControls.addEventListener( 'change', render );
+				cameraControls.addEventListener( 'change', function() { setDistributed(render, Distributed.IMMEDIATE); } );
+                                var distributed = new THREE.Distributed( { controls: cameraControls, camera: camera } );
+                                distributed.sync();
 
 				// TEXTURE MAP
 				var textureMap = new THREE.TextureLoader().load( 'textures/UV_Grid_Sm.jpg' );
@@ -205,6 +210,16 @@
 					nonblinn: false,
 					newShading: "glossy"
 				};
+
+                                watch('effectController', {
+                                    get: function () {
+                                        return effectController;
+                                    },
+                                    set: function (value) {
+                                        effectController = value;
+                                        render();
+                                    }
+                                }, 1000);
 
 				var h;
 

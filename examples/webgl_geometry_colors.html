@@ -38,6 +38,8 @@
 
 		<script src="js/WebGL.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -56,8 +58,8 @@
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
 
-			init();
-			animate();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -65,6 +67,9 @@
 
 				camera = new THREE.PerspectiveCamera( 20, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.z = 1800;
+
+                                var distributed = new THREE.Distributed( { camera: camera } );
+                                distributed.sync();
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xffffff );
@@ -197,11 +202,20 @@
 
 			}
 
+                        watch('mouse', {
+                            get: function () {
+                                return { x: mouseX, y:mouseY };
+                            },
+                            set: function (value) {
+                                mouseX = value.x;
+                                mouseY = value.y;
+                            }
+                        }, 1000);
+
 			function onDocumentMouseMove( event ) {
 
 				mouseX = ( event.clientX - windowHalfX );
 				mouseY = ( event.clientY - windowHalfY );
-
 			}
 
 			//

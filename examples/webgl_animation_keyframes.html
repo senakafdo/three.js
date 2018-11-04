@@ -49,6 +49,8 @@
 		<script src="js/controls/OrbitControls.js"></script>
 		<script src="js/loaders/DRACOLoader.js"></script>
 		<script src="js/loaders/GLTFLoader.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -71,12 +73,14 @@
 			scene = new THREE.Scene();
 			scene.background = new THREE.Color( 0xbfe3dd );
 
-			camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
+			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
 			camera.position.set( 5, 2, 8 );
 
 			controls = new THREE.OrbitControls( camera, renderer.domElement );
 			controls.target.set( 0, 0.5, 0 );
 			controls.enablePan = false;
+                        var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                        distributed.sync();
 
 			scene.add( new THREE.AmbientLight( 0x404040 ) );
 
@@ -113,13 +117,13 @@
 				mixer = new THREE.AnimationMixer( model );
 				mixer.clipAction( gltf.animations[ 0 ] ).play();
 
-				animate();
 
 			}, undefined, function ( e ) {
 
 				console.error( e );
 
 			} );
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 
 			window.onresize = function () {

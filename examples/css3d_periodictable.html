@@ -103,6 +103,8 @@
 		<script src="js/libs/tween.min.js"></script>
 		<script src="js/controls/TrackballControls.js"></script>
 		<script src="js/renderers/CSS3DRenderer.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js css3d</a> - periodic table. <a href="https://plus.google.com/113862800338869870683/posts/QcFk5HrWran" target="_blank" rel="noopener">info</a>.</div>
 		<div id="container"></div>
@@ -242,8 +244,8 @@
 			var objects = [];
 			var targets = { table: [], sphere: [], helix: [], grid: [] };
 
-			init();
-			animate();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -364,34 +366,36 @@
 				controls.minDistance = 500;
 				controls.maxDistance = 6000;
 				controls.addEventListener( 'change', render );
+                                var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                                distributed.sync();
 
 				var button = document.getElementById( 'table' );
-				button.addEventListener( 'click', function () {
-
-					transform( targets.table, 2000 );
-
-				}, false );
+                                var transformTable = function () {
+                                        transform( targets.table, 2000 );
+                                }
+                                setDistributed(transformTable, Distributed.SCHEDULE);
+				button.addEventListener( 'click', function () { setDistributed(transformTable, Distributed.IMMEDIATE); }, false );
 
 				var button = document.getElementById( 'sphere' );
-				button.addEventListener( 'click', function () {
-
-					transform( targets.sphere, 2000 );
-
-				}, false );
+                                var transformSphere = function () {
+                                        transform( targets.sphere, 2000 );
+                                }
+                                setDistributed(transformSphere, Distributed.SCHEDULE);
+				button.addEventListener( 'click', function () { setDistributed(transformSphere, Distributed.IMMEDIATE); }, false );
 
 				var button = document.getElementById( 'helix' );
-				button.addEventListener( 'click', function () {
-
-					transform( targets.helix, 2000 );
-
-				}, false );
+                                var transformHelix = function () {
+                                        transform( targets.helix, 2000 );
+                                }
+                                setDistributed(transformHelix, Distributed.SCHEDULE);
+				button.addEventListener( 'click', function () { setDistributed(transformHelix, Distributed.IMMEDIATE); }, false );
 
 				var button = document.getElementById( 'grid' );
-				button.addEventListener( 'click', function () {
-
-					transform( targets.grid, 2000 );
-
-				}, false );
+                                var transformGrid = function () {
+                                        transform( targets.grid, 2000 );
+                                }
+                                setDistributed(transformGrid, Distributed.SCHEDULE);
+				button.addEventListener( 'click', function () { setDistributed(transformGrid, Distributed.IMMEDIATE); }, false );
 
 				transform( targets.table, 2000 );
 

@@ -259,6 +259,8 @@
 
 		<script src="js/libs/stats.min.js"></script>
 		<script src="js/libs/dat.gui.min.js"></script>
+		<script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+		<script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -275,11 +277,11 @@
 					window.open( canvas.toDataURL() );
 
 				},
-				resolution: '512'
+				resolution: '4000'
 			};
 
-			init();
-			render();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(render, Distributed.TIMEOUT, 500);
 
 			function init() {
 
@@ -315,11 +317,22 @@
 
 				// Controls
 				var controls = new THREE.OrbitControls( camera, canvas );
+                                var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                                distributed.sync();
 
 				// GUI
 				var gui = new dat.GUI();
 				gui.add( config, 'saveImage' ).name( 'Save Image' );
 				gui.add( config, 'resolution', [ '256', '512', '800', 'full' ] ).name( 'Resolution' ).onChange( onWindowResize );
+                                watch('resolution', {
+                                    get: function () {
+                                        return config.resolution;
+                                    },
+                                    set: function (value) {
+                                        config.resolution = value;
+                                        onWindowResize()
+                                    }
+                                }, 1000);
 
 				stats = new Stats();
 				document.body.appendChild( stats.dom );

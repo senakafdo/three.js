@@ -19,6 +19,8 @@
 
 		<script src="js/libs/stats.min.js"></script>
 		<script src="js/libs/dat.gui.min.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
 
 		<script>
 
@@ -295,6 +297,8 @@
 				var controls = new THREE.OrbitControls( camera, renderer.domElement );
 				controls.target.set( 0, 1, 0 );
 				controls.update();
+                                var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                                distributed.sync();
 
 				// GUI
 
@@ -356,6 +360,22 @@
 						}
 					}, "Enabled" );
 
+                                watch('clipping', {
+                                    get: function () {
+                                        return {
+                                            clippingPlanes: renderer.clippingPlanes,
+                                            isVolumeVisualisationVisible: volumeVisualization.visible,
+                                            clipShadows: clipMaterial.clipShadows,
+                                            isLocalClippingEnabled: renderer.localClippingEnabled
+                                        };
+                                    },
+                                    set: function (value) {
+                                        renderer.localClippingEnabled = value.isLocalClippingEnabled;
+                                        renderer.clippingPlanes = value.clippingPlanes;
+                                        volumeVisualization.visible = value.isVolumeVisualisationVisible;
+                                        clipMaterial.clipShadows = value.clipShadows;
+                                    }
+                                }, 1000);
 
 				// Start
 
@@ -427,8 +447,8 @@
 
 			}
 
-			init();
-			animate();
+                        setDistributed(init, Distributed.IMMEDIATE);
+                        setDistributed(animate, Distributed.TIMEOUT, 500);
 
 		</script>
 

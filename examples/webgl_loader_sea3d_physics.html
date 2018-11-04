@@ -57,6 +57,9 @@
 		<script src="js/WebGL.js"></script>
 		<script src="js/libs/stats.min.js"></script>
 
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed.js"></script>
+                <script src="http://gdo-appsdev.dsi.ic.ac.uk:9083/libs/distributed/three.js"></script>
+
 		<script>
 
 			if ( WEBGL.isWebGLAvailable() === false ) {
@@ -75,11 +78,7 @@
 
 			// Initialize Three.JS
 
-			init();
-
-			// Initialize Physics Engine
-
-			SEA3D.AMMO.init();
+			setDistributed(init, Distributed.IMMEDIATE);
 
 			//
 			// SEA3D Loader
@@ -91,9 +90,11 @@
 
 			} );
 
-			loader.onComplete = function () {
+                        var onCompleteFunc = function () {
 
-				new THREE.OrbitControls( camera );
+				var controls = new THREE.OrbitControls( camera );
+                                var distributed = new THREE.Distributed( { controls: controls, camera: camera } );
+                                distributed.sync();
 
 				// events
 
@@ -101,7 +102,7 @@
 
 					e.preventDefault();
 
-					cloneAsset();
+                                        setDistributed(cloneAsset, Distributed.IMMEDIATE);
 
 				} );
 
@@ -109,11 +110,12 @@
 
 				renderer.compile( scene, camera );
 
-				animate();
+				setDistributed(animate, Distributed.TIMEOUT, 500);
 
 			};
-
-			loader.load( './models/sea3d/car.tjs.sea' );
+                        setDistributed(onCompleteFunc, Distributed.SCHEDULE);
+                        setDistributed(animate, Distributed.SCHEDULE);
+                        loader.onComplete = function () { setDistributed(onCompleteFunc, Distributed.IMMEDIATE); }
 
 			var cloneAsset = function () {
 
@@ -135,6 +137,8 @@
 				};
 
 			}();
+
+                        setDistributed(cloneAsset, Distributed.SCHEDULE);
 
 			//
 
@@ -183,6 +187,10 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
+                                // Initialize Physics Engine
+
+                                SEA3D.AMMO.init();
+                                loader.load( './models/sea3d/car.tjs.sea' );
 			}
 
 			function onWindowResize() {
